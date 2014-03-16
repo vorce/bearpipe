@@ -2,6 +2,7 @@ package se.vorce.bearpipe
 
 import scala.concurrent.duration.Duration
 import scala.util.Random
+import rx.lang.scala.Observable
 
 object DocProcessors {
   def fieldSetter(fieldId: String, fieldValue: Any): BearOp = {
@@ -22,7 +23,11 @@ object DocProcessors {
     }
   }
 
-  def score(timeout: Duration): BearOp = {
+  def score(doc: BearDoc, timeout: Duration): Observable[BearDoc] = {
+    Observable.items(scoreFn(timeout)(doc))
+  }
+
+  private def scoreFn(timeout: Duration): BearOp = {
     val urlField: String = "source.url"
     val scoreField: String = "enrichments.score"
 
@@ -33,16 +38,16 @@ object DocProcessors {
       }
   }
 
-  def nlp: BearOp = {
+  def nlp(in: BearDoc): Observable[BearDoc] = {
     def cat = () => ("Category" + Math.abs(Random.nextInt()), Random.nextDouble())
     def cats = for(i <- List.range(0, Random.nextInt(50))) yield cat()
 
     val sentiments = List("POSITIVE", "NEGATIVE", "NEUTRAL")
     def sentiment = () => Random.shuffle(sentiments).head
 
-    (doc: BearDoc) =>
-      doc.updated("enrichments.categories", cats)
-         .updated("enrichments.sentiment", sentiment())
-         .updated("enrichments.language", Random.shuffle(List("en", "jp", "sv", "foo")).head)
+    Observable.items(
+      in.updated("enrichments.categories", cats)
+        .updated("enrichments.sentiment", sentiment())
+        .updated("enrichments.language", Random.shuffle(List("en", "jp", "sv", "foo")).head))
   }
 }
