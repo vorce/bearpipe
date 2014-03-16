@@ -1,7 +1,9 @@
 package se.vorce.bearpipe
 
 object Main extends App {
-  lazy val docs = DocCreator.documentStream
+  lazy val docs = DocCreator.observableDocuments
 
-  (docs take 10).foreach(d => println(DocTransformer.transform(d, DocTransformer.operations)))
+  (docs take 10)
+    .map(d => DocTransformer.transform(d, DocTransformer.operations))
+    .subscribe(n => println(n))
 }

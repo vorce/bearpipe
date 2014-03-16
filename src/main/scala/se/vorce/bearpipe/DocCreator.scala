@@ -1,6 +1,7 @@
 package se.vorce.bearpipe
 
 import scala.util.Random
+import rx.lang.scala.Observable
 
 object DocCreator {
   def content: String = {
@@ -49,5 +50,9 @@ object DocCreator {
 
   def documentStream: Stream[BearDoc] = {
     Stream.cons(doc, documentStream)
+  }
+
+  def observableDocuments: Observable[BearDoc] = {
+    Observable.from(documentStream)
   }
 }
