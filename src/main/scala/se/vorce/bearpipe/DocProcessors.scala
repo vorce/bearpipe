@@ -17,6 +17,8 @@ object DocProcessors {
     }
 
     (doc: BearDoc) =>
+      println(Thread.currentThread().toString + ": category limit")
+
       doc.get(categories) match {
       case Some(xs: List[Category]) => doc.updated(categories, xs.filter(onThreshold).sortBy(c => -c._2).take(amount))
       case _ => doc
@@ -32,6 +34,8 @@ object DocProcessors {
     val scoreField: String = "enrichments.score"
 
     (doc: BearDoc) =>
+      println(Thread.currentThread().toString + ": score")
+
       doc.get(urlField) match {
         case Some(url: String) => fieldSetter(scoreField, ScoreRestMock.get(url, timeout))(doc)
         case _ => doc
@@ -49,5 +53,6 @@ object DocProcessors {
       in.updated("enrichments.categories", cats)
         .updated("enrichments.sentiment", sentiment())
         .updated("enrichments.language", Random.shuffle(List("en", "jp", "sv", "foo")).head))
+      .doOnEach((_: BearDoc) => println(Thread.currentThread().toString + ": nlp"))
   }
 }

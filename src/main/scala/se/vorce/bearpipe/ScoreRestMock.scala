@@ -8,7 +8,7 @@ import ExecutionContext.Implicits.global
 object ScoreRestMock {
   def get(host: String, timeout: Duration): Long = {
     val cf: Future[Long] = future {
-      blocking(Thread.sleep((Random.nextFloat() * 5000).toLong))
+      blocking(Thread.sleep((Random.nextFloat() * 1000).toLong))
       Math.abs(Random.nextLong())
     }
 
