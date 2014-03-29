@@ -2,7 +2,7 @@ package se.vorce.bearpipe
 
 import rx.lang.scala.Scheduler
 import rx.lang.scala.schedulers.ExecutorScheduler
-import java.util.concurrent.{ScheduledThreadPoolExecutor, ScheduledExecutorService}
+import java.util.concurrent.{TimeUnit, ScheduledThreadPoolExecutor, ScheduledExecutorService}
 
 object Main extends App {
   lazy val docs = DocCreator.observableDocuments
@@ -10,11 +10,11 @@ object Main extends App {
   val executor: ScheduledExecutorService = new ScheduledThreadPoolExecutor(5)
   val scheduler: Scheduler = ExecutorScheduler.apply(executor)
 
-  (docs take 100)
+  (docs take 50)
     .map(DocTransformer.transform)
       .subscribeOn(scheduler)
       .observeOn(scheduler)
-      .doOnCompleted(() => System.exit(0))
-      .subscribe(od =>
-        od.subscribe(d => println(d)))
+      .doOnCompleted(() => executor.shutdown())
+      .flatMap(o => o)
+      .subscribe(od => println(od))
 }
